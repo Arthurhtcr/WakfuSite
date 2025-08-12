@@ -1,13 +1,24 @@
 <script setup>
 import { dungeons } from './data/Data_donjons';
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 
-const stasisValues = ref(dungeons.map(() => 0));
+// 1. Récupère les valeurs sauvegardées ou initialise à 0
+const savedValues = JSON.parse(localStorage.getItem('wakfuStasisValues')) || [];
+const stasisValues = ref(dungeons.map((_, index) => savedValues[index] || 0));
 
-// Calcul des valeurs multipliées et du total
+// 2. Sauvegarde automatique quand les valeurs changent
+function updateStasis(index, value) {
+  const numValue = Math.min(Math.max(Number(value) || 0, 0), 10); // Force entre 0 et 10
+  stasisValues.value[index] = numValue;
+  
+  // Sauvegarde dans localStorage
+  localStorage.setItem('wakfuStasisValues', JSON.stringify(stasisValues.value));
+}
+
+// Calculs existants (inchangés)
 const multipliedValues = computed(() => {
   return dungeons.map((donjon, index) => {
-    return (Number(stasisValues.value[index]) || 0) * donjon.nombre_joueurs;
+    return stasisValues.value[index] * donjon.nombre_joueurs;
   });
 });
 
@@ -15,8 +26,10 @@ const totalCoffres = computed(() => {
   return multipliedValues.value.reduce((sum, current) => sum + current, 0);
 });
 
-function updateStasis(index, value) {
-  stasisValues.value[index] = Number(value) || 0,10;
+
+function resetStasis() {
+  stasisValues.value = dungeons.map(() => 0);
+  localStorage.removeItem('wakfuStasisValues');
 }
 </script>
 
@@ -64,6 +77,7 @@ function updateStasis(index, value) {
         </tr>
       </tfoot>
     </table>
+    <button @click="resetStasis" class="reset-btn">Réinitialiser</button>
   </div>
 </template>
 
@@ -94,5 +108,33 @@ function updateStasis(index, value) {
 
 .total-value {
   font-weight: bold;
+}
+
+
+.reset-btn {
+  /* Style de base */
+  padding: 10px 20px;
+  margin: 15px 0;
+  background: linear-gradient(135deg, #00bd7e, #008b5d);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  font-size: 16px;
+
+  /* Effets interactifs */
+  &:hover {
+    background: linear-gradient(135deg, #00a76f, #007c53);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  &:active {
+    transform: translateY(1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
 }
 </style>
