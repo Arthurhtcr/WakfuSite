@@ -97,7 +97,7 @@ export default {
       // Filtre par type
       filtered = filtered.filter(state => {
         if (state.type === 'epic' && !this.showEpic) return false;
-        if (state.type === 'relique' && !this.showRelic) return false;
+        if (state.type === 'relic' && !this.showRelic) return false;
         return true;
       });
       
